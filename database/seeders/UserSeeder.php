@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
     {
         User::create([
             'nama' => 'Administrator',
-            'email' => 'admin@ppks.local',
+            'email' => 'admin@ppks-dinsos.com',
             'password' => Hash::make('password123'),
         ]);
     }

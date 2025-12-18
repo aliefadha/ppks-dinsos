@@ -74,10 +74,6 @@
             <div>
                 <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Penerima Bulan Ini</p>
                 <p class="text-3xl font-bold text-gray-800 mb-1">{{ $penerimaBulanIni }}</p>
-                <div class="flex items-center text-xs">
-                    <span class="text-gray-500">Target:</span>
-                    <span class="ml-1 font-semibold text-amber-600">{{ max(50, $penerimaBulanIni * 2) }}</span>
-                </div>
             </div>
         </div>
     </div>

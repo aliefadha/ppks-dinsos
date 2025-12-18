@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
 
           User::create([
             'nama' => 'Administrator',
-            'email' => 'admin@ppks.local',
+            'email' => 'admin@admin@ppks-dinsos.com',
             'password' => Hash::make('password123'),
         ]);
     }
