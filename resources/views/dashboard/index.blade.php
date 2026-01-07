@@ -15,17 +15,17 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
-    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-blue-500 p-6 relative overflow-hidden">
+    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-yellow-500 p-6 relative overflow-hidden">
         <div class="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
-            <i class="fas fa-gift text-8xl text-blue-500"></i>
+            <i class="fas fa-gift text-8xl text-yellow-500"></i>
         </div>
         <div class="flex items-center justify-between relative z-10">
             <div>
-                <p class="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Total Bantuan</p>
+                <p class="text-xs font-semibold text-yellow-600 uppercase tracking-wide mb-2">Total Bantuan</p>
                 <p class="text-3xl font-bold text-gray-800 mb-1">{{ $totalBantuan }}</p>
             </div>
-            <div class="bg-blue-100 rounded-full p-4 animate-pulse">
-                <i class="fas fa-gift text-blue-500 text-2xl"></i>
+            <div class="bg-yellow-100 rounded-full p-4 animate-pulse">
+                <i class="fas fa-gift text-yellow-500 text-2xl"></i>
             </div>
         </div>
     </div>
@@ -83,8 +83,8 @@
 <div class="bg-white rounded-lg shadow-md p-6 mb-8">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="{{ route('bantuan.create') }}" class="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200 group">
-            <div class="bg-blue-500 text-white rounded-full p-3 mb-2 group-hover:bg-blue-600 transition-colors">
+        <a href="{{ route('bantuan.create') }}" class="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors duration-200 group">
+            <div class="bg-yellow-500 text-white rounded-full p-3 mb-2 group-hover:bg-yellow-600 transition-colors">
                 <i class="fas fa-plus text-lg"></i>
             </div>
             <span class="text-sm font-medium text-gray-700">Tambah Bantuan</span>

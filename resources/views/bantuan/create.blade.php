@@ -16,7 +16,7 @@
 
 <!-- Form Card -->
 <div class="bg-white rounded-lg shadow-md overflow-hidden">
-    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4">
+    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-4">
         <h6 class="text-lg font-semibold">Form Tambah Bantuan</h6>
     </div>
     <div class="p-6">

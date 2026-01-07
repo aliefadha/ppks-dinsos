@@ -15,6 +15,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     
+    // Export Bantuan Index to Excel (must be before resource route)
+    Route::get('/bantuan/export', [BantuanController::class, 'exportIndex'])
+        ->name('bantuan.exportIndex');
+
     // Bantuan Resources
     Route::resource('bantuan', BantuanController::class)->names([
         'index' => 'bantuan.index',
@@ -25,6 +29,10 @@ Route::middleware(['auth'])->group(function () {
         'update' => 'bantuan.update',
         'destroy' => 'bantuan.destroy'
     ]);
+
+    // Export Bantuan to Excel (specific bantuan)
+    Route::get('/bantuan/{bantuan}/export', [BantuanController::class, 'exportExcel'])
+        ->name('bantuan.exportExcel');
 
     // Bantuan-Penerima relationship routes
     Route::post('/bantuan/{bantuan}/penerima/{penerima}/attach', [BantuanController::class, 'attachPenerima'])
@@ -38,7 +46,6 @@ Route::middleware(['auth'])->group(function () {
         
     Route::post('/bantuan/{bantuan}/store-penerimas', [BantuanController::class, 'storePenerimas'])
         ->name('bantuan.storePenerimas');
-
 
     // Penerima Resources
     Route::resource('penerima', PenerimaController::class)->names([
@@ -62,4 +69,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/penerima/{penerima}/add-bantuans', [PenerimaController::class, 'addBantuans'])
         ->name('penerima.addBantuans');
+        
+    Route::post('/penerima/{penerima}/attach-multiple-bantuans', [PenerimaController::class, 'attachMultipleBantuans'])
+        ->name('penerima.attachMultipleBantuans');
+
+    // Check NIK route
+    Route::post('/penerima/check-nik', [PenerimaController::class, 'checkNik'])
+        ->name('penerima.checkNik');
+
+    // Export Penerima to Excel
+    Route::get('/penerima/{penerima}/export', [PenerimaController::class, 'exportExcel'])
+        ->name('penerima.export');
 });

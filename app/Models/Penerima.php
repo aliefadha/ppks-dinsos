@@ -13,6 +13,8 @@ class Penerima extends Model
     protected $fillable = [
         'nama',
         'nik',
+        'no_kk',
+        'desil',
         'alamat',
         'kelurahan',
         'kecamatan',

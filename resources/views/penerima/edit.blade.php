@@ -23,7 +23,7 @@
         <form action="{{ route('penerima.update', $penerima->id) }}" method="POST" data-validate data-form-handler data-autosave>
             @csrf
             @method('PUT')
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-6">
                     <div>
@@ -37,7 +37,7 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    
+
                     <div>
                         <label for="nik" class="block text-sm font-medium text-gray-700 mb-2">
                             NIK <span class="text-red-500">*</span>
@@ -49,7 +49,31 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    
+
+                    <div>
+                        <label for="no_kk" class="block text-sm font-medium text-gray-700 mb-2">
+                            No. KK
+                        </label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent @error('no_kk') border-red-500 @enderror no_kk-input"
+                               id="no_kk" name="no_kk" value="{{ old('no_kk', $penerima->no_kk) }}"
+                               placeholder="Masukkan 16 digit No. KK (opsional)" maxlength="16">
+                        @error('no_kk')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="desil" class="block text-sm font-medium text-gray-700 mb-2">
+                            Desil <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent @error('desil') border-red-500 @enderror desil-input"
+                               id="desil" name="desil" value="{{ old('desil', $penerima->desil) }}"
+                               placeholder="Masukkan desil 1-10" min="1" max="10" required>
+                        @error('desil')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div>
                         <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700 mb-2">
                             Jenis Kelamin <span class="text-red-500">*</span>
@@ -65,7 +89,7 @@
                         @enderror
                     </div>
                 </div>
-                
+
                 <div class="space-y-6">
                     <div>
                         <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">
@@ -78,7 +102,7 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    
+
                     <div>
                         <label for="kelurahan" class="block text-sm font-medium text-gray-700 mb-2">
                             Kelurahan <span class="text-red-500">*</span>
@@ -90,7 +114,7 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    
+
                     <div>
                         <label for="kecamatan" class="block text-sm font-medium text-gray-700 mb-2">
                             Kecamatan <span class="text-red-500">*</span>
@@ -102,10 +126,10 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    
+
                     <div>
                         <label for="jenis" class="block text-sm font-medium text-gray-700 mb-2">
-                            Jenis <span class="text-red-500">*</span>
+                            Kategori <span class="text-red-500">*</span>
                         </label>
                         <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent @error('jenis') border-red-500 @enderror"
                                id="jenis" name="jenis" value="{{ old('jenis', $penerima->jenis) }}"
@@ -116,7 +140,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row gap-3 mt-8">
                 <button type="submit" class="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors" id="submitBtn">
                     <i class="fas fa-save mr-2"></i> <span class="btn-text">Update</span>

@@ -21,19 +21,51 @@
     </div>
     <div class="p-6">
         @if($availableBantuans->count() > 0)
-            <form action="{{ route('penerima.attachBantuan', [$penerima, $availableBantuans->first()]) }}" method="POST" id="attachBantuanForm">
+            <form action="{{ route('penerima.attachMultipleBantuans', $penerima) }}" method="POST" id="attachMultipleBantuanForm">
                 @csrf
                 
                 <div class="space-y-6">
                     <div>
-                        <label for="bantuan_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Program Bantuan:</label>
-                        <select name="bantuan_id" id="bantuan_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required onchange="updateFormAction(this.value)">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="text-lg font-medium text-gray-900">Pilih Program Bantuan</label>
+                            <div class="flex items-center space-x-4">
+                                <button type="button" id="selectAllBtn" class="text-sm text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-check-square mr-1"></i> Pilih Semua
+                                </button>
+                                <button type="button" id="clearAllBtn" class="text-sm text-gray-600 hover:text-gray-800">
+                                    <i class="fas fa-square mr-1"></i> Hapus Pilihan
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="bantuanSelection" class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-4">
+                            @php
+                                $attachedBantuanIds = $penerima->bantuans->pluck('id')->toArray();
+                            @endphp
                             @foreach($availableBantuans as $bantuan)
-                            <option value="{{ $bantuan->id }}" class="py-2">
-                                {{ $bantuan->nama_bantuan }} - {{ \Carbon\Carbon::parse($bantuan->tanggal)->format('d F Y') }}
-                            </option>
+                            @php
+                                $isAttached = in_array($bantuan->id, $attachedBantuanIds);
+                            @endphp
+                            <div class="flex items-center p-2 hover:bg-gray-50 rounded {{ $isAttached ? 'bg-green-50' : '' }}">
+                                <input type="checkbox" name="bantuan_ids[]" value="{{ $bantuan->id }}"
+                                       id="bantuan_{{ $bantuan->id }}"
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       {{ $isAttached ? 'disabled' : '' }}>
+                                <label for="bantuan_{{ $bantuan->id }}" class="ml-3 flex-1 cursor-pointer {{ $isAttached ? 'text-green-700' : '' }}">
+                                    <span class="font-medium">{{ $bantuan->nama_bantuan }}</span>
+                                    <span class="text-sm text-gray-500 block">- {{ \Carbon\Carbon::parse($bantuan->tanggal)->format('d F Y') }}</span>
+                                </label>
+                            </div>
                             @endforeach
-                        </select>
+                        </div>
+                        
+                        <div id="selectedCount" class="mt-2 text-sm text-gray-600">
+                            0 program bantuan dipilih
+                        </div>
+                        
+                        @error('bantuan_ids')
+                            <div class="mt-2 text-sm text-red-600">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div>
@@ -43,7 +75,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-3 mt-8">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <button type="submit" id="submitBtn" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
                         <i class="fas fa-save mr-2"></i> Simpan
                     </button>
                     <a href="{{ route('penerima.show', $penerima) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
@@ -70,21 +102,48 @@
 </div>
 
 <script>
-function updateFormAction(bantuanId) {
-    const form = document.getElementById('attachBantuanForm');
-    if (form && bantuanId) {
-        // Generate the full URL with both parameters
-        const penerimaId = "{{ $penerima->id }}";
-        form.action = `/penerima/${penerimaId}/bantuan/${bantuanId}/attach`;
-    }
-}
-
-// Initialize with the first selected option
 document.addEventListener('DOMContentLoaded', function() {
-    const select = document.getElementById('bantuan_id');
-    if (select && select.value) {
-        updateFormAction(select.value);
+    const checkboxes = document.querySelectorAll('input[name="bantuan_ids[]"]:not(:disabled)');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const selectedCount = document.getElementById('selectedCount');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    function updateSelectedCount() {
+        const checkedCount = document.querySelectorAll('input[name="bantuan_ids[]"]:checked').length;
+        selectedCount.textContent = `${checkedCount} program bantuan dipilih`;
+        
+        // Enable/disable submit button based on selection
+        if (checkedCount > 0) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
     }
+    
+    // Add event listeners to all enabled checkboxes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Select all functionality - only select enabled checkboxes
+    selectAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('input[name="bantuan_ids[]"]:not(:disabled)').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateSelectedCount();
+    });
+    
+    // Clear all functionality - only clear enabled checkboxes
+    clearAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('input[name="bantuan_ids[]"]:not(:disabled)').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+    });
+    
+    // Initialize the count
+    updateSelectedCount();
 });
 </script>
 @endsection

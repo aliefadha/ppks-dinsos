@@ -27,7 +27,7 @@
     @auth
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-gradient-to-b from-blue-600 to-blue-800 text-white">
+        <div class="w-64 bg-gradient-to-b from-yellow-500 to-yellow-700 text-white">
             <div class="p-6">
                 <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
                     <div class="text-xl font-bold">PPKS Dinsos</div>
@@ -107,7 +107,7 @@
                         </button>
                         <form action="{{ route('logout') }}" method="POST" class="inline">
                             @csrf
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
+                            <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none">
                                 Logout
                             </button>
                         </form>

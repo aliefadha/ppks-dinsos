@@ -6,17 +6,92 @@
 <!-- Page Heading -->
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
     <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Data Bantuan</h1>
-    <a href="{{ route('bantuan.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-        <i class="fas fa-plus mr-2"></i> Tambah Bantuan
-    </a>
+    <div class="flex flex-col sm:flex-row gap-2">
+        <a href="{{ route('bantuan.create') }}" class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors">
+            <i class="fas fa-plus mr-2"></i> Tambah Bantuan
+        </a>
+        <a href="{{ route('bantuan.exportIndex', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+            <i class="fas fa-file-excel mr-2"></i> Export Excel
+        </a>
+    </div>
 </div>
 
 <!-- Flash Messages -->
 @include('partials.flash-messages')
 
+<!-- Search and Filter Section -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <form method="GET" action="{{ route('bantuan.index') }}" id="filterForm">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Search Input -->
+            <div class="lg:col-span-2">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
+                <div class="relative">
+                    <input type="text"
+                           id="search"
+                           name="search"
+                           value="{{ request('search') }}"
+                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Cari nama bantuan, deskripsi...">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Filter Year -->
+            <div>
+                <label for="export_year" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                <select id="export_year"
+                        name="export_year"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Semua Tahun</option>
+                    @for($year = now()->year; $year >= 2020; $year--)
+                        <option value="{{ $year }}" {{ request('export_year') == $year ? 'selected' : ($year == now()->year && !request('export_year') ? 'selected' : '') }}>{{ $year }}</option>
+                    @endfor
+                </select>
+            </div>
+        </div>
+        
+        <!-- Second row of filters -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <!-- Filter Recipient Count -->
+            <div>
+                <label for="recipient_filter" class="block text-sm font-medium text-gray-700 mb-1">Filter Penerima</label>
+                <select id="recipient_filter"
+                        name="recipient_filter"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Semua</option>
+                    <option value="with_recipients" {{ request('recipient_filter') == 'with_recipients' ? 'selected' : '' }}>Dengan Penerima</option>
+                    <option value="without_recipients" {{ request('recipient_filter') == 'without_recipients' ? 'selected' : '' }}>Tanpa Penerima</option>
+                    <option value="high_count" {{ request('recipient_filter') == 'high_count' ? 'selected' : '' }}>Jumlah Penerima > 10</option>
+                    <option value="low_count" {{ request('recipient_filter') == 'low_count' ? 'selected' : '' }}>Jumlah Penerima ≤ 10</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center mt-4">
+            <div class="text-sm text-gray-600">
+                Menampilkan {{ $bantuan->firstItem() ?? 0 }} - {{ $bantuan->lastItem() ?? 0 }} dari {{ $bantuan->total() }} data
+            </div>
+            <div class="flex gap-2">
+                <button type="button"
+                        id="resetFilters"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                    <i class="fas fa-redo mr-2"></i> Reset
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-filter mr-2"></i> Terapkan Filter
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
 <!-- Data Table -->
 <div class="bg-white rounded-lg shadow-md overflow-hidden">
-    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4">
+    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-4">
         <h6 class="text-lg font-semibold">Daftar Bantuan</h6>
     </div>
     <div class="p-6">
@@ -70,14 +145,55 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Initialize DataTable with server-side processing disabled
+    // We'll use Laravel's pagination instead
     $('#dataTable').DataTable({
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json'
+            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json',
+            paginate: {
+                previous: "←",
+                next: "→"
+            }
         },
         responsive: true,
         pageLength: 10,
-        ordering: false
+        ordering: false,
+        searching: false, // Disable built-in search as we have our own
+        paging: false,    // Disable built-in pagination as we use Laravel's
+        info: false       // Disable info display as we show our own
     });
+    
+    // Handle form submission for filters
+    $('#filterForm').on('submit', function(e) {
+        // Let form submit normally to reload the page with filters
+        return true;
+    });
+    
+    // Handle reset button
+    $('#resetFilters').on('click', function() {
+        // Clear all filter inputs
+        $('#search').val('');
+        $('#export_year').val('');
+        $('#recipient_filter').val('');
+        
+        // Submit the form to reset
+        $('#filterForm').submit();
+    });
+    
+    // Auto-submit form on change for dropdown filters
+    $('#recipient_filter, #export_year').on('change', function() {
+        $('#filterForm').submit();
+    });
+    
+    // Auto-submit on search input with debounce
+    let searchTimeout;
+    $('#search').on('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            $('#filterForm').submit();
+        }, 500); // Wait 500ms after user stops typing
+    });
+    
 });
 
 function confirmDeleteBantuan(id, nama) {
@@ -106,5 +222,6 @@ function confirmDeleteBantuan(id, nama) {
         form.submit();
     }
 }
+
 </script>
 @endpush
