@@ -14,7 +14,7 @@ Route::post('/authenticate', [LoginController::class, 'authenticate'])->name('au
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    
+
     // Export Bantuan Index to Excel (must be before resource route)
     Route::get('/bantuan/export', [BantuanController::class, 'exportIndex'])
         ->name('bantuan.exportIndex');
@@ -30,20 +30,17 @@ Route::middleware(['auth'])->group(function () {
         'destroy' => 'bantuan.destroy'
     ]);
 
-    // Export Bantuan to Excel (specific bantuan)
-    Route::get('/bantuan/{bantuan}/export', [BantuanController::class, 'exportExcel'])
-        ->name('bantuan.exportExcel');
 
     // Bantuan-Penerima relationship routes
     Route::post('/bantuan/{bantuan}/penerima/{penerima}/attach', [BantuanController::class, 'attachPenerima'])
         ->name('bantuan.attachPenerima');
-        
+
     Route::delete('/bantuan/{bantuan}/penerima/{penerima}/detach', [BantuanController::class, 'detachPenerima'])
         ->name('bantuan.detachPenerima');
 
     Route::get('/bantuan/{bantuan}/add-penerimas', [BantuanController::class, 'addPenerimas'])
         ->name('bantuan.addPenerimas');
-        
+
     Route::post('/bantuan/{bantuan}/store-penerimas', [BantuanController::class, 'storePenerimas'])
         ->name('bantuan.storePenerimas');
 
@@ -58,18 +55,18 @@ Route::middleware(['auth'])->group(function () {
         'destroy' => 'penerima.destroy'
     ]);
 
-      
+
 
     // Penerima-Bantuan relationship routes
     Route::post('/penerima/{penerima}/bantuan/{bantuan}/attach', [PenerimaController::class, 'attachBantuan'])
         ->name('penerima.attachBantuan');
-        
+
     Route::delete('/penerima/{penerima}/bantuan/{bantuan}/detach', [PenerimaController::class, 'detachBantuan'])
         ->name('penerima.detachBantuan');
 
     Route::get('/penerima/{penerima}/add-bantuans', [PenerimaController::class, 'addBantuans'])
         ->name('penerima.addBantuans');
-        
+
     Route::post('/penerima/{penerima}/attach-multiple-bantuans', [PenerimaController::class, 'attachMultipleBantuans'])
         ->name('penerima.attachMultipleBantuans');
 
@@ -80,4 +77,8 @@ Route::middleware(['auth'])->group(function () {
     // Export Penerima to Excel
     Route::get('/penerima/{penerima}/export', [PenerimaController::class, 'exportExcel'])
         ->name('penerima.export');
+
+    // Export Bantuan to PDF
+    Route::get('/bantuan/{bantuan}/export-pdf', [BantuanController::class, 'exportPdf'])
+        ->name('bantuan.exportPdf');
 });

@@ -19,18 +19,18 @@
     <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4">
         <h6 class="text-lg font-semibold">Pilih Penerima</h6>
     </div>
-    <div class="p-6">
-        @if($availablePenerimas->count() > 0)
+     <div class="p-6">
+         @if($availablePenerimas->count() > 0)
             <form action="{{ route('bantuan.storePenerimas', $bantuan) }}" method="POST">
                 @csrf
-                
+
                 <div class="space-y-6">
                     <div>
                         <label for="penerima_ids" class="block text-sm font-medium text-gray-700 mb-2">Pilih Penerima:</label>
                         <select name="penerima_ids[]" id="penerima_ids" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" multiple required size="10">
                             @foreach($availablePenerimas as $penerima)
                             <option value="{{ $penerima->id }}" class="py-2">
-                                {{ $penerima->nama }} ({{ $penerima->nik }})
+                                {{ $penerima->nama }} (NIK: {{ $penerima->nik }}) - Desil: {{ $penerima->desil ?? '-' }}
                             </option>
                             @endforeach
                         </select>
@@ -52,15 +52,16 @@
                     </a>
                 </div>
             </form>
-        @else
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                <div class="flex items-center">
-                    <i class="fas fa-info-circle text-blue-400 mr-3"></i>
-                    <div>
-                        <p class="text-sm text-blue-700">Semua penerima sudah terdaftar dalam program bantuan ini.</p>
-                    </div>
-                </div>
-            </div>
+         @else
+             <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                 <div class="flex items-center">
+                     <i class="fas fa-info-circle text-blue-400 mr-3"></i>
+                     <div>
+                          <p class="text-sm text-blue-700">Semua penerima yang dapat menerima bantuan (desil 1-5) sudah terdaftar dalam program bantuan ini.</p>
+                          <p class="text-sm text-blue-700 mt-2">Penerima dengan desil kosong atau 6-10 tidak dapat menerima bantuan.</p>
+                     </div>
+                 </div>
+             </div>
             <div class="mt-6">
                 <a href="{{ route('bantuan.show', $bantuan) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
                     <i class="fas fa-arrow-left mr-2"></i> Kembali ke Detail Bantuan

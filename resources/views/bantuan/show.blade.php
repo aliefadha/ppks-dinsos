@@ -13,8 +13,8 @@
         <a href="{{ route('bantuan.addPenerimas', $bantuan) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
             <i class="fas fa-plus mr-2"></i> Tambah Penerima
         </a>
-        <a href="{{ route('bantuan.exportExcel', $bantuan) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors no-print">
-            <i class="fas fa-file-excel mr-2"></i> Cetak
+        <a href="{{ route('bantuan.exportPdf', $bantuan) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+            <i class="fas fa-file-pdf mr-2"></i> Export PDF
         </a>
         <a href="{{ route('bantuan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
             <i class="fas fa-arrow-left mr-2"></i> Kembali
@@ -43,12 +43,12 @@
                 <p class="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{{ \Carbon\Carbon::parse($bantuan->tanggal)->format('d F Y') }}</p>
             </div>
         </div>
-        
+
         <div class="mt-6">
             <h3 class="text-sm font-semibold text-gray-700 mb-2">Deskripsi</h3>
             <p class="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{{ $bantuan->deskripsi }}</p>
         </div>
-        
+
         <div class="mt-6">
             <h3 class="text-sm font-semibold text-gray-700 mb-2">Jumlah Penerima</h3>
             <p class="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{{ $bantuan->penerimas->count() }} orang</p>
@@ -125,10 +125,10 @@ function confirmDeletePenerima(nama) {
 function printPenerimaList() {
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
-    
+
     // Get the current date
     const currentDate = new Date().toLocaleString('id-ID');
-    
+
     // Create the HTML content for the print view
     const printContent = `
     <!DOCTYPE html>
@@ -144,14 +144,14 @@ function printPenerimaList() {
                 padding: 20px;
                 color: black;
             }
-            
+
             .header {
                 text-align: center;
                 margin-bottom: 30px;
                 border-bottom: 2px solid #ddd;
                 padding-bottom: 20px;
             }
-            
+
             .bantuan-info {
                 margin-bottom: 30px;
                 padding: 15px;
@@ -159,43 +159,43 @@ function printPenerimaList() {
                 border: 1px solid #ddd;
                 border-radius: 5px;
             }
-            
+
             .bantuan-info h3 {
                 margin-top: 0;
                 color: #333;
             }
-            
+
             .info-row {
                 margin-bottom: 8px;
             }
-            
+
             .info-label {
                 font-weight: bold;
                 display: inline-block;
                 width: 120px;
             }
-            
+
             table {
                 width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 20px;
             }
-            
+
             th, td {
                 border: 1px solid #ddd;
                 padding: 10px;
                 text-align: left;
             }
-            
+
             th {
                 background-color: #f2f2f2;
                 font-weight: bold;
             }
-            
+
             tr:nth-child(even) {
                 background-color: #f9f9f9;
             }
-            
+
             .footer {
                 margin-top: 30px;
                 text-align: center;
@@ -204,14 +204,14 @@ function printPenerimaList() {
                 border-top: 1px solid #ddd;
                 padding-top: 10px;
             }
-            
+
             .no-data {
                 text-align: center;
                 padding: 20px;
                 font-style: italic;
                 color: #666;
             }
-            
+
             .summary {
                 margin-top: 20px;
                 padding: 10px;
@@ -221,16 +221,16 @@ function printPenerimaList() {
                 text-align: center;
                 font-weight: bold;
             }
-            
+
             @media print {
                 body {
                     padding: 10px;
                 }
-                
+
                 .header {
                     margin-bottom: 20px;
                 }
-                
+
                 .bantuan-info {
                     margin-bottom: 20px;
                 }
@@ -242,7 +242,7 @@ function printPenerimaList() {
             <h1>Daftar Penerima Program Bantuan</h1>
             <h2>PPKS Dinsos</h2>
         </div>
-        
+
         <div class="bantuan-info">
             <h3>Informasi Program Bantuan</h3>
             <div class="info-row">
@@ -255,7 +255,7 @@ function printPenerimaList() {
                 <span class="info-label">Deskripsi:</span> {{ $bantuan->deskripsi }}
             </div>
         </div>
-        
+
         <h3>Daftar Penerima</h3>
         @if($bantuan->penerimas->count() > 0)
             <table>
@@ -288,7 +288,7 @@ function printPenerimaList() {
                     @endforeach
                 </tbody>
             </table>
-            
+
             <div class="summary">
                 Total Penerima: {{ $bantuan->penerimas->count() }} orang
             </div>
@@ -297,18 +297,18 @@ function printPenerimaList() {
                 Belum ada penerima untuk program bantuan ini.
             </div>
         @endif
-        
+
         <div class="footer">
             <p>Laporan ini dicetak pada: ${currentDate}</p>
         </div>
     </body>
     </html>
     `;
-    
+
     // Write the content to the new window
     printWindow.document.write(printContent);
     printWindow.document.close();
-    
+
     // Wait for the content to load, then print
     printWindow.onload = function() {
         printWindow.print();

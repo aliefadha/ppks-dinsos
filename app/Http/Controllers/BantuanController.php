@@ -8,6 +8,8 @@ use App\Models\Penerima;
 use App\Exports\BantuanExport;
 use App\Exports\BantuanIndexExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class BantuanController extends Controller
 {
@@ -17,12 +19,12 @@ class BantuanController extends Controller
     public function index(Request $request)
     {
         $query = Bantuan::with('penerimas');
-        
+
         // Filter by year
         if ($request->has('export_year') && !empty($request->export_year)) {
             $query->whereYear('tanggal', $request->export_year);
         }
-        
+
         // Search functionality
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
@@ -31,16 +33,16 @@ class BantuanController extends Controller
                   ->orWhere('deskripsi', 'like', '%' . $searchTerm . '%');
             });
         }
-        
+
         // Filter by date range
         if ($request->has('date_from') && !empty($request->date_from)) {
             $query->whereDate('tanggal', '>=', $request->date_from);
         }
-        
+
         if ($request->has('date_to') && !empty($request->date_to)) {
             $query->whereDate('tanggal', '<=', $request->date_to);
         }
-        
+
         // Filter by recipient count
         if ($request->has('recipient_filter') && !empty($request->recipient_filter)) {
             switch ($request->recipient_filter) {
@@ -58,15 +60,15 @@ class BantuanController extends Controller
                     break;
             }
         }
-        
+
         // Order and paginate
         $bantuan = $query->latest()->paginate(10)->withQueryString();
-        
+
         return view('bantuan.index', compact('bantuan'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show form for creating a new resource.
      */
     public function create()
     {
@@ -94,7 +96,7 @@ class BantuanController extends Controller
         ]);
 
         $bantuan = Bantuan::create($request->all());
-        
+
         return redirect()->route('bantuan.index')
                         ->with('success', 'Data bantuan berhasil ditambahkan.');
     }
@@ -109,7 +111,7 @@ class BantuanController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show form for editing the specified resource.
      */
     public function edit(string $id)
     {
@@ -139,7 +141,7 @@ class BantuanController extends Controller
 
         $bantuan = Bantuan::findOrFail($id);
         $bantuan->update($request->all());
-        
+
         return redirect()->route('bantuan.index')
                         ->with('success', 'Data bantuan berhasil diperbarui.');
     }
@@ -151,7 +153,7 @@ class BantuanController extends Controller
     {
         $bantuan = Bantuan::findOrFail($id);
         $bantuan->delete();
-        
+
         return redirect()->route('bantuan.index')
                         ->with('success', 'Data bantuan berhasil dihapus.');
     }
@@ -165,6 +167,14 @@ class BantuanController extends Controller
             'tanggal_diberikan' => 'nullable|date',
         ]);
 
+        // Check if penerima can receive bantuan based on desil (only 1-5 eligible)
+        $canReceiveBantuan = $penerima->desil >= 1 && $penerima->desil <= 5;
+
+        if (!$canReceiveBantuan) {
+            return redirect()->route('bantuan.show', $bantuan)
+                            ->with('error', 'Penerima dengan desil kosong atau 6-10 tidak dapat menerima bantuan. Hanya penerima dengan desil 1-5 yang dapat menerima bantuan.');
+        }
+
         $bantuan->attachPenerima(
             $penerima->id,
             $request->tanggal_diberikan
@@ -175,7 +185,7 @@ class BantuanController extends Controller
     }
 
     /**
-     * Detach a recipient from a bantuan
+     * Detach a recipient from bantuan
      */
     public function detachPenerima(Bantuan $bantuan, Penerima $penerima)
     {
@@ -192,7 +202,9 @@ class BantuanController extends Controller
     {
         // Get recipients not already attached to this bantuan
         $attachedPenerimaIds = $bantuan->penerimas->pluck('id');
-        $availablePenerimas = Penerima::whereNotIn('id', $attachedPenerimaIds)->get();
+        $availablePenerimas = Penerima::whereNotIn('id', $attachedPenerimaIds)
+            ->whereBetween('desil', [1, 5])
+            ->get();
 
         return view('bantuan.add-penerimas', compact('bantuan', 'availablePenerimas'));
     }
@@ -208,25 +220,37 @@ class BantuanController extends Controller
             'tanggal_diberikan' => 'nullable|date',
         ]);
 
+        // Filter out penerimas with desil 6-10 or null (cannot receive bantuan)
+        $validPenerimaIds = [];
+        $invalidPenerimaIds = [];
+
         foreach ($request->penerima_ids as $penerimaId) {
+            $penerima = Penerima::find($penerimaId);
+
+            // Check if penerima can receive bantuan (desil 1-5 only)
+            if ($penerima->desil >= 1 && $penerima->desil <= 5) {
+                $validPenerimaIds[] = $penerimaId;
+            } else {
+                $invalidPenerimaIds[] = $penerima->nama;
+            }
+        }
+
+        // Attach only valid penerimas
+        foreach ($validPenerimaIds as $penerimaId) {
             $bantuan->attachPenerima(
                 $penerimaId,
                 $request->tanggal_diberikan
             );
         }
 
-        return redirect()->route('bantuan.show', $bantuan)
-                        ->with('success', count($request->penerima_ids) . ' penerima berhasil ditambahkan.');
-    }
+        // Prepare message based on results
+        $message = count($validPenerimaIds) . ' penerima berhasil ditambahkan.';
+        if (!empty($invalidPenerimaIds)) {
+            $message .= ' ' . count($invalidPenerimaIds) . ' penerima dengan desil kosong atau 6-10 tidak dapat menerima bantuan.';
+        }
 
-    /**
-     * Export bantuan data to Excel
-     */
-    public function exportExcel(Bantuan $bantuan)
-    {
-        $fileName = 'Data_Bantuan_' . str_replace(' ', '_', $bantuan->nama_bantuan) . '_' . date('Y-m-d') . '.xlsx';
-        
-        return Excel::download(new BantuanExport($bantuan), $fileName);
+        return redirect()->route('bantuan.show', $bantuan)
+                        ->with('success', $message);
     }
 
     /**
@@ -239,13 +263,44 @@ class BantuanController extends Controller
         $dateTo = $request->get('date_to');
         $search = $request->get('search');
         $recipientFilter = $request->get('recipient_filter');
-        
+
         $fileName = 'Data_Bantuan';
         if ($year) {
             $fileName .= '_Tahun_' . $year;
         }
         $fileName .= '_' . date('Y-m-d') . '.xlsx';
-        
+
         return Excel::download(new BantuanIndexExport($year, $dateFrom, $dateTo, $search, $recipientFilter), $fileName);
+    }
+
+    /**
+     * Export single bantuan data to PDF
+     */
+    public function exportPdf(Bantuan $bantuan)
+    {
+        $bantuan->load('penerimas');
+
+        // Convert logo to base64
+        $logoPath = public_path('dinsos.jpeg');
+        $logoBase64 = '';
+        if (file_exists($logoPath)) {
+            $logoBase64 = 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath));
+        }
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+
+        $dompdf = new Dompdf($options);
+
+        $html = view('bantuan.pdf', compact('bantuan', 'logoBase64'))->render();
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $fileName = 'Bantuan_' . preg_replace('/[^A-Za-z0-9-_]/', '_', $bantuan->nama_bantuan) . '_' . date('Y-m-d') . '.pdf';
+
+        return $dompdf->stream($fileName);
     }
 }
